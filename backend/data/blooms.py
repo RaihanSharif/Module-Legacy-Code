@@ -40,6 +40,24 @@ def add_bloom(*, sender: User, content: str) -> Bloom:
             )
 
 
+def add_rebloom(*, rebloomer: User, bloom_id: str):
+    """Rebloom a bloom. returns True if new rebloom was created.
+    returns False if the user has already rebloomed this bloom, no new rebloom created.
+    """
+    with db_cursor() as cur:
+        cur.execute(
+            """INSERT INTO reblooms (user_id, bloom_id, rebloom_timestamp)
+            VALUES (%(user_id)s, %(bloom_id)s, %(timestamp)s)
+            ON CONFLICT (user_id, bloom_id) DO NOTHING
+            RETURNING id""",
+            dict(
+                user_id=rebloomer.id,
+                bloom_id=bloom_id,
+                timestamp=datetime.datetime.now() # TODO: specify timezone?
+            ),
+        )
+        return cur.fetchone() is not None
+
 def get_blooms_for_user(
     username: str, *, before: Optional[int] = None, limit: Optional[int] = None
 ) -> List[Bloom]:
