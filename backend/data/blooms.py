@@ -66,7 +66,7 @@ def get_blooms_for_user(
             "sender_username": username,
         }
         if before is not None:
-            before_clause = "AND send_timestamp < %(before_limit)s"
+            before_clause = "WHERE fi.sort_ts < %(before_limit)s"
             kwargs["before_limit"] = before
         else:
             before_clause = ""
@@ -81,7 +81,7 @@ def get_blooms_for_user(
                        NULL::INT AS rebloomer_id,
                        NULL::TIMESTAMP AS rebloom_ts
                 FROM blooms b INNER JOIN users u ON u.id = b.sender_id
-                WHERE u.username = %(username)s
+                WHERE u.username = %(sender_username)s
 
                 UNION ALL
 
@@ -91,7 +91,7 @@ def get_blooms_for_user(
                        r.user_id,
                        r.rebloom_timestamp
                 FROM reblooms r INNER JOIN users u ON u.id = r.user_id
-                WHERE u.username = %(username)s
+                WHERE u.username = %(sender_username)s
             )
             SELECT
               b.id,
