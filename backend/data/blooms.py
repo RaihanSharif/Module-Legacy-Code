@@ -74,14 +74,39 @@ def get_blooms_for_user(
         limit_clause = make_limit_clause(limit, kwargs)
 
         cur.execute(
-            f"""SELECT
-              blooms.id, users.username, content, send_timestamp
-            FROM
-              blooms INNER JOIN users ON users.id = blooms.sender_id
-            WHERE
-              username = %(sender_username)s
-              {before_clause}
-            ORDER BY send_timestamp DESC
+            f"""WITH feed_items AS (
+                -- blooms the user sent
+                SELECT b.id AS bloom_id,
+                       b.send_timestamp AS sort_ts,
+                       NULL::INT AS rebloomer_id,
+                       NULL::TIMESTAMP AS rebloom_ts
+                FROM blooms b INNER JOIN users u ON u.id = b.sender_id
+                WHERE u.username = %(username)s
+
+                UNION ALL
+
+                -- blooms the user rebloomed
+                SELECT r.bloom_id,
+                       r.rebloom_timestamp,
+                       r.user_id,
+                       r.rebloom_timestamp
+                FROM reblooms r INNER JOIN users u ON u.id = r.user_id
+                WHERE u.username = %(username)s
+            )
+            SELECT
+              b.id,
+              author.username,
+              b.content,
+              b.send_timestamp,
+              (SELECT COUNT(*) FROM reblooms rc WHERE rc.bloom_id = b.id),
+              rebloomer.username,
+              fi.rebloom_ts
+            FROM feed_items fi
+              INNER JOIN blooms b ON b.id = fi.bloom_id
+              INNER JOIN users author ON author.id = b.sender_id
+              LEFT JOIN users rebloomer ON rebloomer.id = fi.rebloomer_id
+            {before_clause}
+            ORDER BY fi.sort_ts DESC, b.id DESC
             {limit_clause}
             """,
             kwargs,
@@ -89,13 +114,17 @@ def get_blooms_for_user(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, content, timestamp = row
+            (bloom_id, sender_username, content, timestamp,
+             rebloom_count, rebloomed_by, rebloom_timestamp) = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
                     content=content,
                     sent_timestamp=timestamp,
+                    rebloom_count=rebloom_count,
+                    rebloomed_by=rebloomed_by,
+                    rebloom_timestamp=rebloom_timestamp,
                 )
             )
     return blooms
