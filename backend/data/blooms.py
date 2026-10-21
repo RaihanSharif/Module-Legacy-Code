@@ -13,6 +13,9 @@ class Bloom:
     sender: User
     content: str
     sent_timestamp: datetime.datetime
+    rebloom_count: int = 0
+    rebloomed_by: Optional[str] = None  # username of the rebloomer
+    rebloom_timestamp: Optional[datetime.datetime] = None
 
 
 def add_bloom(*, sender: User, content: str) -> Bloom:
