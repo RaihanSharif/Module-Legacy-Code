@@ -198,9 +198,13 @@ def home_timeline():
     # Combine own blooms with followed blooms
     all_blooms = followed_blooms + own_blooms
 
-    # Sort by timestamp (newest first)
+    # Sort by timestamp of rebloom or timestamp of creation (newest first)
     sorted_blooms = list(
-        sorted(all_blooms, key=lambda bloom: bloom.sent_timestamp, reverse=True)
+        sorted(
+            all_blooms, 
+            key=lambda bloom: bloom.rebloom_timestamp or bloom.sent_timestamp, 
+            reverse=True
+        )
     )
 
     return jsonify(sorted_blooms)
