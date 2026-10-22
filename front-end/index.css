@@ -294,13 +294,13 @@ dialog {
 /* A rebloom item in the feed */
 .bloom.bloom--rebloom {
   background-color: hsl(var(--key), 45%, 93%);
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--brand);
 }
 
 /* A rebloom item made by the logged-in user: stronger tint, brand bar */
 .bloom.bloom--own-rebloom {
   background-color: hsl(var(--key), 45%, 89%);
-  border-left: 4px solid var(--brand);
+  border-left: 4px solid green;
 }
 
 .bloom--own-rebloom .bloom__rebloom-info {
