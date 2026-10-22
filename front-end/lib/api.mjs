@@ -282,7 +282,7 @@ async function unfollowUser(username) {
 }
 
 // Mark a bloom as rebloomed by the current user, wherever it is held in state
-function _markRebloomedInState(bloomId, created) {
+function _markRebloomedInState(bloomId, rebloomCount) {
   const id = Number(bloomId);
   const update = (b) =>
     b.id === id ? {...b, rebloomed_by_me: true, rebloom_count: rebloomCount} : b;
@@ -308,14 +308,15 @@ async function rebloom(bloomId) {
     });
 
     if (data.success) {
-      _markRebloomedInState(bloomId, data.created);
+      console.log(data.rebloom_count)
+      _markRebloomedInState(bloomId, data.rebloom_count);
       // Refetch only what gains a brand-new item: your timeline and profile
       await Promise.all([getBlooms(), getProfile(state.currentUser)]);
     }
 
     return data;
   } catch (error) {
-    // Error already handled by _apiRequest
+    console.error("rebloom failed:", error);
     return {success: false};
   }
 }
