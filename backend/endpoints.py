@@ -75,6 +75,18 @@ def register():
     )
 
 
+def _mark_rebloomed_by_me(bloom_list, user):
+    """Set rebloomed_by_me on each bloom for the logged-in viewer."""
+    if user is None:  # logged-out viewers on public pages
+        return bloom_list
+    ids = blooms.get_rebloomed_bloom_ids(
+        user=user, bloom_ids=list({b.id for b in bloom_list})
+    )
+    for b in bloom_list:
+        b.rebloomed_by_me = b.id in ids
+    return bloom_list
+
+
 @jwt_required()
 def self_profile():
     username = get_current_user().username
@@ -111,6 +123,8 @@ def other_profile(profile_username):
 
     followers = get_inverse_followed_usernames(profile_user)
     all_blooms = blooms.get_blooms_for_user(profile_username)
+    _mark_rebloomed_by_me(all_blooms, current_user)  # edits the blooms list in place
+
     return jsonify(
         {
             "username": profile_username,
@@ -166,6 +180,7 @@ def send_bloom():
     )
 
 
+@jwt_required(optional=True)
 def get_bloom(id_str):
     try:
         id_int = int(id_str)
@@ -174,6 +189,7 @@ def get_bloom(id_str):
     bloom = blooms.get_bloom(id_int)
     if bloom is None:
         return make_response((f"Bloom not found", 404))
+    _mark_rebloomed_by_me([bloom], get_current_user())
     return jsonify(bloom)
 
 
@@ -222,13 +238,14 @@ def home_timeline():
         )
     )
 
-    return jsonify(sorted_blooms)
+    return jsonify(_mark_rebloomed_by_me(sorted_blooms, current_user))
 
 
+@jwt_required(optional=True)
 def user_blooms(profile_username):
+    current_user = get_current_user()
     user_blooms = blooms.get_blooms_for_user(profile_username)
-    user_blooms.reverse()
-    return jsonify(user_blooms)
+    return jsonify(_mark_rebloomed_by_me(user_blooms, current_user))
 
 
 @jwt_required()
