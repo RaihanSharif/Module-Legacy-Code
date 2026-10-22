@@ -16,6 +16,7 @@ class Bloom:
     rebloom_count: int = 0
     rebloomed_by: Optional[str] = None  # username of the rebloomer
     rebloom_timestamp: Optional[datetime.datetime] = None
+    rebloomed_by_me: bool = False  # set by the endpoint for the logged-in viewer
 
 
 def add_bloom(*, sender: User, content: str) -> Bloom:
@@ -57,6 +58,19 @@ def add_rebloom(*, rebloomer: User, bloom_id: str):
             ),
         )
         return cur.fetchone() is not None
+
+def get_rebloomed_bloom_ids(*, user: User, bloom_ids: List[int]) -> set:
+    """Which of these blooms has this user rebloomed?"""
+    if not bloom_ids:
+        return set()
+    with db_cursor() as cur:
+        cur.execute(
+            """SELECT bloom_id FROM reblooms
+            WHERE user_id = %(user_id)s AND bloom_id = ANY(%(bloom_ids)s)""",
+            dict(user_id=user.id, bloom_ids=list(bloom_ids)),
+        )
+        return {row[0] for row in cur.fetchall()}
+
 
 def get_blooms_for_user(
     username: str, *, before: Optional[int] = None, limit: Optional[int] = None
