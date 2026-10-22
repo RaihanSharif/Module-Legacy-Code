@@ -281,6 +281,28 @@ async function unfollowUser(username) {
   }
 }
 
+async function rebloom(bloomId) {
+  try {
+    const data = await _apiRequest(`/bloom/${bloomId}/rebloom`, {
+      method: "POST",
+    });
+
+    if (data.success) {
+      // Refetch so the page shows the new rebloom and the updated button state
+      await Promise.all([
+        getBlooms(),
+        getProfile(state.currentUser),
+        ...(state.currentHashtag ? [getBloomsByHashtag(state.currentHashtag)] : []),
+      ]);
+    }
+
+    return data;
+  } catch (error) {
+    // Error already handled by _apiRequest
+    return {success: false};
+  }
+}
+
 const apiService = {
   // Auth methods
   login,
@@ -292,6 +314,7 @@ const apiService = {
   getBlooms,
   postBloom,
   getBloomsByHashtag,
+  rebloom,
 
   // User methods
   getProfile,
