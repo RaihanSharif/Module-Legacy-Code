@@ -264,8 +264,10 @@ def suggested_follows(limit_str):
     return jsonify(suggestions)
 
 
+@jwt_required(optional=True)
 def hashtag(hashtag):
-    return jsonify(blooms.get_blooms_with_hashtag(hashtag))
+    hashtag_blooms = blooms.get_blooms_with_hashtag(hashtag)
+    return jsonify(_mark_rebloomed_by_me(hashtag_blooms, get_current_user()))
 
 
 def verify_request_fields(names_to_types: Dict[str, type]) -> Union[Response, None]:
