@@ -57,6 +57,8 @@ const createBloom = (template, bloom) => {
     rebloomerLink.setAttribute("href", `/profile/${bloom.rebloomed_by}`);
     rebloomerLink.textContent = isOwnRebloom ? "You" : bloom.rebloomed_by;
     rebloomTime.textContent = _formatTimestamp(bloom.rebloom_timestamp);
+    // Logged-out viewers can't rebloom
+    rebloomBtn.hidden = true;
   }
   if (isOwnRebloom) bloomArticle.classList.add("bloom--own-rebloom");
 
@@ -66,8 +68,7 @@ const createBloom = (template, bloom) => {
     // On your own rebloom item the top line already says "You rebloomed"
     rebloomedLabel.hidden = isOwnRebloom;
   }
-  
-  // Logged-out viewers can't rebloom
+
   if (!state.isLoggedIn) rebloomBtn.hidden = true;
 
   // Count: nothing shown when it has never been rebloomed

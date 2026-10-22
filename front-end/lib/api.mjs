@@ -281,6 +281,32 @@ async function unfollowUser(username) {
   }
 }
 
+// Mark a bloom as rebloomed by the current user, wherever it is held in state
+function _markRebloomedInState(bloomId, created) {
+  const id = Number(bloomId);
+  const update = (b) =>
+    b.id === id
+      ? {
+          ...b,
+          rebloomed_by_me: true,
+          rebloom_count: b.rebloom_count + (created ? 1 : 0),
+        }
+      : b;
+
+  state.updateState({
+    timelineBlooms: (state.timelineBlooms ?? []).map(update),
+    hashtagBlooms: (state.hashtagBlooms ?? []).map(update),
+    singleBloomToShow: state.singleBloomToShow
+      ? update(state.singleBloomToShow)
+      : null,
+    profiles: (state.profiles ?? []).map((p) => ({
+      ...p,
+      ...(p.recent_blooms ? {recent_blooms: p.recent_blooms.map(update)} : {}),
+      ...(p.blooms ? {blooms: p.blooms.map(update)} : {}),
+    })),
+  });
+}
+
 async function rebloom(bloomId) {
   try {
     const data = await _apiRequest(`/bloom/${bloomId}/rebloom`, {
@@ -288,12 +314,9 @@ async function rebloom(bloomId) {
     });
 
     if (data.success) {
-      // Refetch so the page shows the new rebloom and the updated button state
-      await Promise.all([
-        getBlooms(),
-        getProfile(state.currentUser),
-        ...(state.currentHashtag ? [getBloomsByHashtag(state.currentHashtag)] : []),
-      ]);
+      _markRebloomedInState(bloomId, data.created);
+      // Refetch only what gains a brand-new item: your timeline and profile
+      await Promise.all([getBlooms(), getProfile(state.currentUser)]);
     }
 
     return data;

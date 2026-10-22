@@ -143,6 +143,14 @@ def get_blooms_for_user(
             )
     return blooms
 
+def get_rebloom_count(bloom_id: int) -> int:
+    with db_cursor() as cur:
+        cur.execute(
+            "SELECT COUNT(*) FROM reblooms WHERE bloom_id = %(bloom_id)s",
+            dict(bloom_id=bloom_id),
+        )
+        return cur.fetchone()[0]
+
 
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
