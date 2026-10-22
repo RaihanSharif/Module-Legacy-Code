@@ -1,4 +1,4 @@
-import {state} from "./lib/state.mjs"
+import {state} from "../lib/state.mjs"
 
 /**
  * Create a bloom component (including reblooms)
