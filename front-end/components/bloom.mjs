@@ -62,12 +62,11 @@ const createBloom = (template, bloom) => {
 
   // The logged-in user has rebloomed this bloom: different colour, no button
   if (rebloomedByMe) {
-    bloomArticle.classList.add("bloom--rebloomed-by-me");
     rebloomBtn.hidden = true;
     // On your own rebloom item the top line already says "You rebloomed"
     rebloomedLabel.hidden = isOwnRebloom;
   }
-
+  
   // Logged-out viewers can't rebloom
   if (!state.isLoggedIn) rebloomBtn.hidden = true;
 
