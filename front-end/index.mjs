@@ -33,6 +33,10 @@ async function init() {
     }
     await apiService.getProfile();
 
+    if (state.isLoggedIn) {
+      await apiService.getBlooms(); // refresh the cached timeline
+    }
+
     if (isProfilePage && profileUsername) {
       await apiService.getProfile(profileUsername);
     }
