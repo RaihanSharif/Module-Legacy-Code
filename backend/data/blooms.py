@@ -45,6 +45,7 @@ def add_rebloom(*, rebloomer: User, bloom_id: str):
     """Rebloom a bloom. returns True if new rebloom was created.
     returns False if the user has already rebloomed this bloom, no new rebloom created.
     """
+    now = datetime.datetime.now(tz=datetime.UTC)
     with db_cursor() as cur:
         cur.execute(
             """INSERT INTO reblooms (user_id, bloom_id, rebloom_timestamp)
@@ -54,7 +55,7 @@ def add_rebloom(*, rebloomer: User, bloom_id: str):
             dict(
                 user_id=rebloomer.id,
                 bloom_id=bloom_id,
-                timestamp=datetime.datetime.now() # TODO: specify timezone?
+                timestamp=now
             ),
         )
         return cur.fetchone() is not None
