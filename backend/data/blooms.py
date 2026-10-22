@@ -143,30 +143,26 @@ def get_blooms_for_user(
             )
     return blooms
 
-def get_rebloom_count(bloom_id: int) -> int:
-    with db_cursor() as cur:
-        cur.execute(
-            "SELECT COUNT(*) FROM reblooms WHERE bloom_id = %(bloom_id)s",
-            dict(bloom_id=bloom_id),
-        )
-        return cur.fetchone()[0]
-
 
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
         cur.execute(
-            "SELECT blooms.id, users.username, content, send_timestamp FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
+            """SELECT blooms.id, users.username, content, send_timestamp,
+              (SELECT COUNT(*) FROM reblooms rc WHERE rc.bloom_id = blooms.id)
+            FROM blooms INNER JOIN users ON users.id = blooms.sender_id
+            WHERE blooms.id = %s""",
             (bloom_id,),
         )
         row = cur.fetchone()
         if row is None:
             return None
-        bloom_id, sender_username, content, timestamp = row
+        bloom_id, sender_username, content, timestamp, rebloom_count = row
         return Bloom(
             id=bloom_id,
             sender=sender_username,
             content=content,
             sent_timestamp=timestamp,
+            rebloom_count=rebloom_count,
         )
 
 
@@ -180,7 +176,8 @@ def get_blooms_with_hashtag(
     with db_cursor() as cur:
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, content, send_timestamp
+              blooms.id, users.username, content, send_timestamp,
+              (SELECT COUNT(*) FROM reblooms rc WHERE rc.bloom_id = blooms.id)
             FROM
               blooms INNER JOIN hashtags ON blooms.id = hashtags.bloom_id INNER JOIN users ON blooms.sender_id = users.id
             WHERE
@@ -193,13 +190,14 @@ def get_blooms_with_hashtag(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, content, timestamp = row
+            bloom_id, sender_username, content, timestamp, rebloom_count = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
                     content=content,
                     sent_timestamp=timestamp,
+                    rebloom_count=rebloom_count
                 )
             )
     return blooms

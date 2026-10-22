@@ -285,13 +285,7 @@ async function unfollowUser(username) {
 function _markRebloomedInState(bloomId, created) {
   const id = Number(bloomId);
   const update = (b) =>
-    b.id === id
-      ? {
-          ...b,
-          rebloomed_by_me: true,
-          rebloom_count: b.rebloom_count + (created ? 1 : 0),
-        }
-      : b;
+    b.id === id ? {...b, rebloomed_by_me: true, rebloom_count: rebloomCount} : b;
 
   state.updateState({
     timelineBlooms: (state.timelineBlooms ?? []).map(update),

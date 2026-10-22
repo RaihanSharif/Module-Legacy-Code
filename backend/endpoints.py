@@ -203,12 +203,13 @@ def send_rebloom(bloom_id: int):
         )
 
     created = blooms.add_rebloom(rebloomer=user, bloom_id=bloom_id)
+    bloom = blooms.get_bloom(bloom_id)  # fetched again so the count includes this rebloom
 
     return jsonify(
         {
             "success": True,
             "created": created,
-            "rebloom_count": blooms.get_rebloom_count(bloom_id)
+            "rebloom_count": bloom.rebloom_count,
         }
     )
 
