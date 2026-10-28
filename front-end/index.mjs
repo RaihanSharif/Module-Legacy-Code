@@ -64,8 +64,13 @@ document.addEventListener("click", async (event) => {
 
   const bloomId = button.closest("[data-bloom]").dataset.bloomId;
   button.disabled = true; // stops double-clicks while the request runs
-  await apiService.rebloom(bloomId);
-  button.disabled = false;
+  try {
+    await apiService.rebloom(bloomId);
+  } catch (err) {
+    handleErrorDialog(err)
+  } finally {
+    button.disabled = false;
+  }
 });
 
 export {
