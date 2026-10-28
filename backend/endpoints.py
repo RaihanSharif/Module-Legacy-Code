@@ -198,9 +198,7 @@ def send_rebloom(bloom_id: int):
     user = get_current_user()
 
     if blooms.get_bloom(bloom_id) is None:
-        return make_response(
-            jsonify({"success": False, "message": "Bloom not found"}), 404
-        )
+        return make_response((f"Bloom not found", 404))
 
     created = blooms.add_rebloom(rebloomer=user, bloom_id=bloom_id)
     bloom = blooms.get_bloom(bloom_id)  # fetched again so the count includes this rebloom
