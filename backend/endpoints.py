@@ -185,10 +185,10 @@ def get_bloom(id_str):
     try:
         id_int = int(id_str)
     except ValueError:
-        return make_response((f"Invalid bloom id", 400))
+        return make_response(("Invalid bloom id", 400))
     bloom = blooms.get_bloom(id_int)
     if bloom is None:
-        return make_response((f"Bloom not found", 404))
+        return make_response(("Bloom not found", 404))
     _mark_rebloomed_by_me([bloom], get_current_user())
     return jsonify(bloom)
 
@@ -198,7 +198,7 @@ def send_rebloom(bloom_id: int):
     user = get_current_user()
 
     if blooms.get_bloom(bloom_id) is None:
-        return make_response((f"Bloom not found", 404))
+        return make_response(("Bloom not found", 404))
 
     created = blooms.add_rebloom(rebloomer=user, bloom_id=bloom_id)
     bloom = blooms.get_bloom(bloom_id)  # fetched again so the count includes this rebloom
