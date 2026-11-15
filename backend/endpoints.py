@@ -255,7 +255,7 @@ def suggested_follows(limit_str):
     try:
         limit_int = int(limit_str)
     except ValueError:
-        return make_response((f"Invalid limit", 400))
+        return make_response(("Invalid limit", 400))
 
     current_user = get_current_user()
 
