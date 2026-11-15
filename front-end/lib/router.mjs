@@ -17,13 +17,13 @@ function refreshRouteData() {
 
   if (hash.startsWith("/bloom/")) {
     // getBloom has no error handling of its own, and the dialog already showed
-    apiService.getBloom(hash.split("/")[2]).catch(() => {});
+    void apiService.getBloom(hash.split("/")[2]).catch(() => {});
   } else if (hash.startsWith("/profile/")) {
-    apiService.getProfile(hash.split("/")[2]);
+    void apiService.getProfile(hash.split("/")[2]);
   } else if (hash.startsWith("/hashtag/")) {
-    apiService.getBloomsByHashtag(hash.split("/")[2]);
+    void apiService.getBloomsByHashtag(hash.split("/")[2]);
   } else if (hash === "/" && state.isLoggedIn) {
-    apiService.getBlooms();
+    void apiService.getBlooms();
   }
 }
 
